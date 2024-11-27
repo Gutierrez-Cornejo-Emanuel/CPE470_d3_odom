@@ -23,7 +23,8 @@ class OdometryDriver(Node):
         self.distance_moved = 0.0
         self.previous_point_x = -1000
         self.previous_point_y = -1000
-        self.move30cm()
+        timer_period = 0.3
+        self.timer = self.create_timer(timer_period, self.move30cm)
 
     def odom_callback(self, msg:Odometry):
         x, y = msg.pose.pose.position.x, msg.pose.pose.position.y
@@ -34,7 +35,7 @@ class OdometryDriver(Node):
         self.previous_point_x, self.previous_point_y = x,y
         self.get_logger().info('Total distance moved: "%s"' % str(self.distance_moved))
     def move30cm(self):
-        while self.distance_moved < 0.3:
+        if self.distance_moved < 0.3:
             msg = Twist()
             msg.linear.x = 0.2
             self.publisher_.publish(msg)
