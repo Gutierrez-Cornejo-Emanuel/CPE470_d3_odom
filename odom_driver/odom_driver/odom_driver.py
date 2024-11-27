@@ -23,7 +23,7 @@ class OdometryDriver(Node):
         self.distance_moved = 0.0
         self.previous_point_x = -1000
         self.previous_point_y = -1000
-        #self.move30cm()
+        self.move30cm()
 
     def odom_callback(self, msg:Odometry):
         x, y = msg.pose.pose.position.x, msg.pose.pose.position.y
