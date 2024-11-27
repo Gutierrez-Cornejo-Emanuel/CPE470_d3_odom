@@ -5,6 +5,7 @@ from std_msgs.msg import String
 from geometry_msgs.msg import PoseWithCovariance
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
+from rclpy.qos import qos_profile_sensor_data
 import math
 
 
@@ -13,11 +14,12 @@ class OdometryDriver(Node):
     def __init__(self):
         super().__init__('odom_driver')
         self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
+        
         self.subscription = self.create_subscription(
             Odometry,
             '/odom',
             self.odom_callback,
-            10)
+            qos_profile = qos_profile_sensor_data)
         self.distance_moved = 0.0
         self.previous_point_x = -1000
         self.previous_point_y = -1000
