@@ -42,7 +42,7 @@ class OdometryDriver(Node):
             msg.linear.x = 0.2
             self.publisher_.publish(msg)
     def alpha_delta_callback(self, msg):
-        print(f'alpha: {msg.alpha}, beta: {msg.beta}')
+        print(f'alpha: {msg.alpha}, delta: {msg.delta}')
         if (abs(msg.alpha) > 3 or msg.alpha == -1000) and not self.aligned:
             twist = Twist()
             twist.angular.x = 0.25 * (-1 if msg.alpha < 0 else 1)
