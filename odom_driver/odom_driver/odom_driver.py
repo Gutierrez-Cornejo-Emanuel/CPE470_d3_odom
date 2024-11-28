@@ -6,6 +6,7 @@ from geometry_msgs.msg import PoseWithCovariance
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from rclpy.qos import qos_profile_sensor_data
+from alpha_delta.msg import AlphaDelta
 import math
 
 
@@ -14,6 +15,7 @@ class OdometryDriver(Node):
     def __init__(self):
         super().__init__('odom_driver')
         self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.alpha_delta_sub = self.create_subscription(AlphaDelta, '/alpha_delta', self.alpha_delta_callback)
         
         self.subscription = self.create_subscription(
             Odometry,
@@ -23,9 +25,9 @@ class OdometryDriver(Node):
         self.distance_moved = 0.0
         self.previous_point_x = -1000
         self.previous_point_y = -1000
+        self.aligned = False
         timer_period = 0.3
-        self.timer = self.create_timer(timer_period, self.move30cm)
-
+        self.create_timer(timer_period, self.move30cm)
     def odom_callback(self, msg:Odometry):
         x, y = msg.pose.pose.position.x, msg.pose.pose.position.y
         if self.previous_point_x == -1000:
@@ -35,11 +37,17 @@ class OdometryDriver(Node):
         self.previous_point_x, self.previous_point_y = x,y
         self.get_logger().info('Total distance moved: "%s"' % str(self.distance_moved))
     def move30cm(self):
-        if self.distance_moved < 0.3:
+        if self.distance_moved < 0.3 and self.aligned:
             msg = Twist()
             msg.linear.x = 0.2
             self.publisher_.publish(msg)
-
+    def alpha_delta_callback(self, msg):
+        if msg.alpha > 3 or msg.alpha == -1000:
+            twist = Twist()
+            twist.angular.x = 0.25
+            self.publisher_.publish(twist)
+        else:
+            self.aligned = True
 
 def main(args=None):
     rclpy.init(args=args)
