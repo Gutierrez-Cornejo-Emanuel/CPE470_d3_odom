@@ -15,7 +15,7 @@ class OdometryDriver(Node):
     def __init__(self):
         super().__init__('odom_driver')
         self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
-        self.alpha_delta_sub = self.create_subscription(AlphaDelta, '/alpha_delta', self.alpha_delta_callback)
+        self.alpha_delta_sub = self.create_subscription(AlphaDelta, '/aruco_pose', self.alpha_delta_callback)
         
         self.subscription = self.create_subscription(
             Odometry,
@@ -45,7 +45,7 @@ class OdometryDriver(Node):
         print(f'alpha: {msg.alpha}, delta: {msg.delta}')
         if (abs(msg.alpha) > 3 or msg.alpha == -1000) and not self.aligned:
             twist = Twist()
-            twist.angular.x = 0.25 * (-1 if msg.alpha < 0 else 1)
+            twist.angular.z = 0.25 * (-1 if msg.alpha < 0 else 1)
             self.publisher_.publish(twist)
         elif abs(msg.alpha) < 3:
             self.aligned = True
