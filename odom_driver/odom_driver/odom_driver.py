@@ -37,7 +37,7 @@ class OdometryDriver(Node):
         self.previous_point_x, self.previous_point_y = x,y
         self.get_logger().info('Total distance moved: "%s"' % str(self.distance_moved))
     def move30cm(self):
-        if self.distance_moved < 0.3 and self.aligned:
+        if self.distance_moved < 0.3 and not self.aligned:
             msg = Twist()
             msg.linear.x = 0.2
             self.publisher_.publish(msg)
