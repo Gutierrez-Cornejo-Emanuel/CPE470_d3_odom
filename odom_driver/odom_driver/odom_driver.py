@@ -26,28 +26,33 @@ class OdometryDriver(Node):
         self.previous_point_x = -1000
         self.previous_point_y = -1000
         self.aligned = False
-        timer_period = 0.3
+        timer_period = 0.15
         self.create_timer(timer_period, self.move30cm)
+        self.angular_z = 0
     def odom_callback(self, msg:Odometry):
         x, y = msg.pose.pose.position.x, msg.pose.pose.position.y
         if self.previous_point_x == -1000:
             self.previous_point_x = x
             self.previous_point_y = y
-        self.distance_moved += math.dist((x, y), (self.previous_point_x, self.previous_point_y))
+        if self.aligned:
+            self.distance_moved += math.dist((x, y), (self.previous_point_x, self.previous_point_y))
         self.previous_point_x, self.previous_point_y = x,y
         self.get_logger().info('Total distance moved: "%s"' % str(self.distance_moved))
     def move30cm(self):
         if self.distance_moved < 0.3 and self.aligned:
             msg = Twist()
             msg.linear.x = 0.2
+            msg.angular.z = self.angular_z
             self.publisher_.publish(msg)
     def alpha_delta_callback(self, msg):
         print(f'alpha: {msg.alpha}, delta: {msg.delta}')
-        if (abs(msg.alpha) > 7 or msg.alpha == -1000) and not self.aligned:
+        if (abs(msg.alpha) > 3 and self.distance_moved < 0.3):
             twist = Twist()
-            twist.angular.z = 0.1 * (1 if msg.alpha < 0 else -1)
-            self.publisher_.publish(twist)
-        elif abs(msg.alpha) < 7:
+            self.angular_z = 0.1 * (1 if msg.alpha < 0 else -1)
+            twist.angular.z = 0.005  * (1 if msg.alpha < 0 else -1)
+            if not self.aligned:
+                self.publisher_.publish(twist)
+        elif abs(msg.alpha) < 3:
             self.aligned = True
 
 def main(args=None):
