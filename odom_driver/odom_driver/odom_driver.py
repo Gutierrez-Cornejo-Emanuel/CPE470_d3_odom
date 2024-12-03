@@ -48,7 +48,7 @@ class OdometryDriver(Node):
         print(f'alpha: {msg.alpha}, delta: {msg.delta}')
         if (abs(msg.alpha) > 3 and self.distance_moved < 0.3):
             twist = Twist()
-            self.angular_z = 0.1 * (1 if msg.alpha < 0 else -1)
+            self.angular_z = 0.001 * (1 if msg.alpha < 0 else -1)
             twist.angular.z = 0.005  * (1 if msg.alpha < 0 else -1)
             if not self.aligned:
                 self.publisher_.publish(twist)
